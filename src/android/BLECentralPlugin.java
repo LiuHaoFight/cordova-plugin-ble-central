@@ -36,6 +36,8 @@ import android.os.Handler;
 import android.os.Build;
 
 import android.provider.Settings;
+import android.util.Log;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
@@ -239,6 +241,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             UUID serviceUUID = uuidFromString(args.getString(1));
             UUID characteristicUUID = uuidFromString(args.getString(2));
             byte[] data = args.getArrayBuffer(3);
+            Log.i("BLECentralPlugin WRITE", Arrays.toString(data));
             int type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
             write(callbackContext, macAddress, serviceUUID, characteristicUUID, data, type);
 

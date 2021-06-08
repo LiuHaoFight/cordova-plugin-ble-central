@@ -412,11 +412,14 @@ public class Peripheral extends BluetoothGattCallback {
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
         LOG.d(TAG, "onCharacteristicChanged %s", characteristic);
+        LOG.d(TAG, "onCharacteristicChanged %s", characteristic.getValue().toString());
 
         SequentialCallbackContext callback = notificationCallbacks.get(generateHashKey(characteristic));
 
         if (callback != null) {
             callback.sendSequentialResult(characteristic.getValue());
+        } else {
+            LOG.d(TAG, "onCharacteristicChanged callback == null");
         }
     }
 
@@ -536,7 +539,7 @@ public class Peripheral extends BluetoothGattCallback {
                     }
 
                 } else {
-                    callbackContext.error("Set notification failed for " + characteristicUUID);
+//                    callbackContext.error("Set notification failed for " + characteristicUUID);
                 }
 
             } else {
