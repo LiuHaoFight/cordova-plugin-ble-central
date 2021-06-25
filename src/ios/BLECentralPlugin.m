@@ -226,7 +226,7 @@
             return;
         }
         CBCharacteristic *characteristic = [context characteristic];
-
+        NSLog(@"startNotification %@", characteristic);
         NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
         NSString *callback = [command.callbackId copy];
         [startNotificationCallbacks setObject: callback forKey: key];
@@ -560,7 +560,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
-    NSLog(@"didDiscoverCharacteristicsForService");
+    NSLog(@"didDiscoverCharacteristicsForService %@", service);
 
     NSString *peripheralUUIDString = [peripheral uuidAsString];
     NSString *connectCallbackId = [connectCallbacks valueForKey:peripheralUUIDString];
@@ -585,10 +585,10 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
-    NSLog(@"didUpdateValueForCharacteristic");
+    NSLog(@"didUpdateValueForCharacteristic %@", characteristic);
 
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
-    NSString *notifyCallbackId = [notificationCallbacks objectForKey:key];
+    NSString *notifyCallbackId = [startNotificationCallbacks objectForKey:key];
 
     if (notifyCallbackId) {
         NSData *data = characteristic.value; // send RAW data to Javascript
@@ -625,6 +625,7 @@
 }
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    NSLog(@"didUpdateNotificationStateForCharacteristic %@", characteristic);
     NSString *key = [self keyForPeripheral: peripheral andCharacteristic:characteristic];
     NSString *startNotificationCallbackId = [startNotificationCallbacks objectForKey:key];
     NSString *stopNotificationCallbackId = [stopNotificationCallbacks objectForKey:key];
@@ -643,19 +644,19 @@
         [notificationCallbacks removeObjectForKey:key];
         NSAssert(![startNotificationCallbacks objectForKey:key], @"%@ existed in both start and stop notification callback dicts!", key);
     }
-    
-    if (characteristic.isNotifying && startNotificationCallbackId) {
-        if (error) {
-            NSLog(@"%@", error);
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
-            [startNotificationCallbacks removeObjectForKey:key];
-        } else {
-            // notification start succeeded, move the callback to the value notifications dict
-            [notificationCallbacks setObject:startNotificationCallbackId forKey:key];
-            [startNotificationCallbacks removeObjectForKey:key];
-        }
-    }
+    NSLog(@"didUpdateNotificationStateForCharacteristic %@", characteristic.value);
+//    if (startNotificationCallbackId && characteristic.value != nil) {
+//        if (error) {
+//            NSLog(@"%@", error);
+//            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+//            [self.commandDelegate sendPluginResult:pluginResult callbackId:startNotificationCallbackId];
+//            [startNotificationCallbacks removeObjectForKey:key];
+//        } else {
+//            // notification start succeeded, move the callback to the value notifications dict
+//            [notificationCallbacks setObject:startNotificationCallbackId forKey:key];
+//            [startNotificationCallbacks removeObjectForKey:key];
+//        }
+//    }
 }
 
 
