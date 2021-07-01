@@ -666,7 +666,7 @@ public class BLECentralPlugin extends CordovaPlugin {
     private ScanCallback leScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            LOG.w(TAG, "Scan Result");
+//            LOG.w(TAG, "Scan Result");
             super.onScanResult(callbackType, result);
             BluetoothDevice device = result.getDevice();
             String address = device.getAddress();
@@ -676,7 +676,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
                 Peripheral peripheral = new Peripheral(device, result.getRssi(), result.getScanRecord().getBytes());
                 peripherals.put(device.getAddress(), peripheral);
-
+                LOG.i(TAG, "Scan Result not reported " + peripheral.getDevice().getAddress());
                 if (discoverCallback != null) {
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, peripheral.asJSONObject());
                     pluginResult.setKeepCallback(true);
@@ -686,6 +686,7 @@ public class BLECentralPlugin extends CordovaPlugin {
             } else {
                 Peripheral peripheral = peripherals.get(address);
                 if (peripheral != null) {
+                    LOG.i(TAG, "Scan Result alreadyReported " + peripheral.getDevice().getAddress());
                     peripheral.update(result.getRssi(), result.getScanRecord().getBytes());
                     if (reportDuplicates && discoverCallback != null) {
                         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, peripheral.asJSONObject());

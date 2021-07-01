@@ -169,7 +169,7 @@ public class Peripheral extends BluetoothGattCallback {
         super.onMtuChanged(gatt, mtu, status);
         LOG.d(TAG, "mtu=%d, status=%d", mtu, status);
 
-        if (status == BluetoothGatt.GATT_SUCCESS) {
+        if (requestMtuCallback != null && status == BluetoothGatt.GATT_SUCCESS) {
             requestMtuCallback.success(mtu);
         } else {
             requestMtuCallback.error("MTU request failed");
@@ -511,10 +511,10 @@ public class Peripheral extends BluetoothGattCallback {
 
         BluetoothGattService service = gatt.getService(serviceUUID);
         BluetoothGattCharacteristic characteristic = findNotifyCharacteristic(service, characteristicUUID);
-        String key = generateHashKey(serviceUUID, characteristic);
+
 
         if (characteristic != null) {
-
+            String key = generateHashKey(serviceUUID, characteristic);
             notificationCallbacks.put(key, new SequentialCallbackContext(callbackContext));
 
             if (gatt.setCharacteristicNotification(characteristic, true)) {
@@ -564,10 +564,9 @@ public class Peripheral extends BluetoothGattCallback {
 
         BluetoothGattService service = gatt.getService(serviceUUID);
         BluetoothGattCharacteristic characteristic = findNotifyCharacteristic(service, characteristicUUID);
-        String key = generateHashKey(serviceUUID, characteristic);
 
         if (characteristic != null) {
-
+            String key = generateHashKey(serviceUUID, characteristic);
             notificationCallbacks.remove(key);
 
             if (gatt.setCharacteristicNotification(characteristic, false)) {
@@ -597,6 +596,9 @@ public class Peripheral extends BluetoothGattCallback {
         BluetoothGattCharacteristic characteristic = null;
 
         // Check for Notify first
+        if (service == null) {
+            return null;
+        }
         List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
         for (BluetoothGattCharacteristic c : characteristics) {
             if ((c.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0 && characteristicUUID.equals(c.getUuid())) {
