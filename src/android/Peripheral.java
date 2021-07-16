@@ -367,6 +367,7 @@ public class Peripheral extends BluetoothGattCallback {
         // refreshCallback is a kludge for refreshing services, if it exists, it temporarily
         // overrides the connect callback. Unfortunately this edge case make the code confusing.
 
+        LOG.i(TAG, "onServicesDiscovered. status =  " + status + " " + (refreshCallback != null));
         if (status == BluetoothGatt.GATT_SUCCESS) {
             PluginResult result = new PluginResult(PluginResult.Status.OK, this.asJSONObject(gatt));
             result.setKeepCallback(true);
@@ -392,13 +393,15 @@ public class Peripheral extends BluetoothGattCallback {
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 
         this.gatt = gatt;
-
-        if (newState == BluetoothGatt.STATE_CONNECTED) {
+        LOG.i(TAG, "onConnectionStateChange status " + status + " newState " + newState);
+        if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothGatt.STATE_CONNECTED) {
             LOG.d(TAG, "onConnectionStateChange CONNECTED");
             connected = true;
             connecting = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
+            }
             gatt.discoverServices();
-
         } else {  // Disconnected
             LOG.d(TAG, "onConnectionStateChange DISCONNECTED");
             connected = false;
