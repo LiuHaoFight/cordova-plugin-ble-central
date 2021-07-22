@@ -171,6 +171,7 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         } else if (action.equals(STOP_SCAN)) {
 
+//            bluetoothAdapter.stopLeScan(mLeScanCallback);
             bluetoothLeScanner.stopScan(leScanCallback);
             callbackContext.success();
 
@@ -241,7 +242,6 @@ public class BLECentralPlugin extends CordovaPlugin {
             UUID serviceUUID = uuidFromString(args.getString(1));
             UUID characteristicUUID = uuidFromString(args.getString(2));
             byte[] data = args.getArrayBuffer(3);
-            Log.i("BLECentralPlugin WRITE", Arrays.toString(data));
             int type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
             write(callbackContext, macAddress, serviceUUID, characteristicUUID, data, type);
 
@@ -764,18 +764,16 @@ public class BLECentralPlugin extends CordovaPlugin {
 
         discoverCallback = callbackContext;
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        List<ScanFilter> filters = new ArrayList<ScanFilter>();
         if (serviceUUIDs != null && serviceUUIDs.length > 0) {
-            List<ScanFilter> filters = new ArrayList<ScanFilter>();
             for (UUID uuid : serviceUUIDs) {
                 ScanFilter filter = new ScanFilter.Builder().setServiceUuid(
                         new ParcelUuid(uuid)).build();
                 filters.add(filter);
             }
-            ScanSettings settings = new ScanSettings.Builder().build();
-            bluetoothLeScanner.startScan(filters, settings, leScanCallback);
-        } else {
-            bluetoothLeScanner.startScan(leScanCallback);
         }
+        ScanSettings settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
+        bluetoothLeScanner.startScan(filters, settings, leScanCallback);
 
         if (scanSeconds > 0) {
             Handler handler = new Handler();
