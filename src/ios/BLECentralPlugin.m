@@ -559,6 +559,11 @@
     }
 }
 
+- (void)peripheral:(CBPeripheral *)peripheral didModifyServices:(NSError *)error {
+    NSLog(@"didModifyServices");
+    [peripheral discoverServices:nil];
+}
+
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error {
     NSLog(@"didDiscoverCharacteristicsForService %@", service);
 
